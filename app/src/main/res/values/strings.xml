@@ -1,0 +1,32 @@
+<resources>
+
+    <!-- LoginActivity Strings-->
+    <string name="app_name">Smart Bike Part 1</string>
+    <string name="usersKeyJared">jared</string>
+    <string name="usersValJared">jared</string>
+    <string name="username">username</string>
+    <string name="usernameHint">username</string>
+    <string name="passwordHint">password</string>
+    <string name="loginText">login</string>
+    <string name="incorrectLogin">Incorrect username or password</string>
+
+    <!-- ControlActivity Strings-->
+    <string name="bikeID"> Bike ID: \u0020</string>
+    <string name="status"> Status:\u0020</string>
+    <string name="on"> on</string>
+    <string name="auto">auto</string>
+    <string name="blinking">blink</string>
+    <string name="solid">solid</string>
+    <string name="lightState">Light State</string>
+    <string name="lightMode">Light Mode</string>
+    <string name="connected">connected</string>
+    <string name="notConnected">not connected</string>
+    <string name="history">history</string>
+    <string name="unlock">unlock</string>
+
+    <!-- AlertDialog Strings-->
+    <string name="accept">accept</string>
+    <string name="cancel">cancel</string>
+    <string name="inputMACAddress">Input MAC Address:</string>
+
+</resources>
