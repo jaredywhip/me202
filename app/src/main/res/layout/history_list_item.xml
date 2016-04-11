@@ -7,10 +7,9 @@
         android:id="@+id/iconImageView"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
-        android:layout_alignParentBottom="true"
+        android:src="@drawable/fastclock"
         android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:src="@drawable/fastclock" />
+        android:layout_alignParentStart="true" />
 
     <TextView
         android:id="@+id/dateTextView"
