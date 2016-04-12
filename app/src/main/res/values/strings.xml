@@ -30,7 +30,8 @@
     <string name="inputMACAddress">Input MAC Address:</string>
 
     <!-- RideHistoryActivity Strings -->
-    <string name="addLocation">+</string>
-
+    <string name="addLocation">Input ride location:</string>
+    <string name="addRide">Add Ride</string>
+    <string name="pleaseAddLoc">Please add location of ride and try again</string>
 
 </resources>
