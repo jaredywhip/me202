@@ -6,51 +6,46 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-
+import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Random;
 import com.squareup.picasso.Picasso;
 /**
  * Created by jaredostdiek on 4/11/16.
  */
-public class HistoryArrayAdapter extends ArrayAdapter {
-    private final Context context;
-    private final ArrayList<String> historyInfo;
+public class HistoryArrayAdapter extends ArrayAdapter{
+    private Context context;
+    private ArrayList<HistoryListItem> listOjects;
 
 
-    public HistoryArrayAdapter(Context context, ArrayList<String> historyInfo){
-        super(context,R.layout.history_list_item, historyInfo);
+    public HistoryArrayAdapter(Context context, ArrayList<HistoryListItem> listOjects){
+        super(context, R.layout.history_list_item, R.id.dateTextView, listOjects);
         this.context = context;
-        this.historyInfo = historyInfo;
+        this.listOjects = listOjects;
 
     }
 
-    //@Override
-    public View getHistoryView(int position, View convertView, ViewGroup parent){
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent){
         View v = convertView;
 
         if(v == null) {
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            v = inflater.inflate(R.layout.history_list_item, parent, false);
+            v = inflater.inflate(R.layout.history_list_item, null);
         }
 
-        TextView locTextView = (TextView) v.findViewById(R.id.locTextView);
-        TextView dateTextView = (TextView) v.findViewById(R.id.dateTextView);
-        ImageView iconImageView = (ImageView) v.findViewById(R.id.iconImageView);
+        HistoryListItem singleItem = listOjects.get(position);
 
-        locTextView.setText(historyInfo.get(position));
-        dateTextView.setText(historyInfo.get(position));
+        if (singleItem != null) {
+            TextView locTextView = (TextView) v.findViewById(R.id.locTextView);
+            TextView dateTextView = (TextView) v.findViewById(R.id.dateTextView);
+            ImageView iconImageView = (ImageView) v.findViewById(R.id.iconImageView);
 
-        Random rand = new Random();
-        int iconRandom = rand.nextInt(2);
-
-        if (iconRandom == 0){
-            Picasso.with(context).load(R.drawable.fastclock).resize(80,80).centerCrop().into(iconImageView);
+            locTextView.setText(singleItem.getLocation());
+            dateTextView.setText(singleItem.getDate());
+            Picasso.with(context).load(singleItem.getIconID()).fit().centerInside().into(iconImageView);
         }
-        else {
-            Picasso.with(context).load(R.drawable.beachcruiser).resize(80,80).centerCrop().into(iconImageView);
 
-        }
 
         return v;
     }

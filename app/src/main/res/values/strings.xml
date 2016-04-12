@@ -29,4 +29,8 @@
     <string name="cancel">cancel</string>
     <string name="inputMACAddress">Input MAC Address:</string>
 
+    <!-- RideHistoryActivity Strings -->
+    <string name="addLocation">+</string>
+
+
 </resources>
