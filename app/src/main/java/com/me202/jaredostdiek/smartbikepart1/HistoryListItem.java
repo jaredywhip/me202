@@ -2,17 +2,13 @@ package com.me202.jaredostdiek.smartbikepart1;
 
 /**
  * Created by jaredostdiek on 4/11/16.
+ *File Description: Java class to package info in object for ride history listview
  */
 
-//this class is used to create an object to add to the listview for ride history
 public class HistoryListItem {
     private String date;
     private String location;
     private int iconID;
-
-    public HistoryListItem(){
-
-    }
 
     public HistoryListItem(int ID, String loc, String d){
         this.iconID = ID;
@@ -20,6 +16,7 @@ public class HistoryListItem {
         this.date = d;
     }
 
+    //get and set methods
     public int getIconID() {
         return iconID;
     }
@@ -39,6 +36,7 @@ public class HistoryListItem {
     public String getDate() {
         return date;
     }
+
     public void setDate(String date) {
         this.date = date;
     }

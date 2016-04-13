@@ -11,6 +11,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+/**
+ * Created by jaredostdiek on 4/4/16.
+ *File Description: Java file to control the Login Screen.
+ */
+
 public class LoginActivity extends AppCompatActivity {
 
     Button loginButton;
