@@ -4,6 +4,8 @@
     <string name="app_name">Smart Bike Part 1</string>
     <string name="usersKeyJared">jared</string>
     <string name="usersValJared">jared</string>
+    <string name="usersKeyBlank"></string>
+    <string name="usersValBlank"></string>
     <string name="username">username</string>
     <string name="usernameHint">username</string>
     <string name="passwordHint">password</string>

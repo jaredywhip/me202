@@ -18,7 +18,7 @@ import com.squareup.picasso.Picasso;
  * ride history information in a ListView.
  */
 
-public class HistoryArrayAdapter extends ArrayAdapter{
+public class HistoryArrayAdapter extends ArrayAdapter<HistoryListItem> {
     private Context context;
     private ArrayList<HistoryListItem> listOjects;
 

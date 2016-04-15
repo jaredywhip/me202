@@ -30,6 +30,7 @@ public class LoginActivity extends AppCompatActivity {
 
         //add user and password to map
         users.put(context.getString(R.string.usersKeyJared), context.getString(R.string.usersValJared));
+        users.put(context.getString(R.string.usersKeyBlank), context.getString(R.string.usersValBlank));
 
         //create objects for button and user inputs
         loginButton = (Button)findViewById(R.id.loginButton);
