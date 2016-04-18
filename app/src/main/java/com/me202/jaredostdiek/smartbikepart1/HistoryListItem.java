@@ -6,17 +6,33 @@ package com.me202.jaredostdiek.smartbikepart1;
  */
 
 public class HistoryListItem {
+    private int ID;
     private String date;
     private String location;
     private int iconID;
 
-    public HistoryListItem(int ID, String loc, String d){
-        this.iconID = ID;
+    public HistoryListItem(){
+    }
+
+    public HistoryListItem(int ID, int iconID, String loc, String d){
+        this.ID = ID;
+        this.iconID = iconID;
+        this.location = loc;
+        this.date = d;
+    }
+
+    public HistoryListItem(int iconID, String loc, String d){
+        this.iconID = iconID;
         this.location = loc;
         this.date = d;
     }
 
     //get and set methods
+
+    public int getID() { return ID; }
+
+    public void setID(int ID) { this.ID = ID;}
+
     public int getIconID() {
         return iconID;
     }

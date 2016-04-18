@@ -18,10 +18,12 @@ import android.widget.Toast;
 
 public class LoginActivity extends AppCompatActivity {
 
-    Button loginButton;
+    Button loginButton, nextButton, registerButton;
     EditText userInput, passInput;
     Map<String,String > users = new HashMap(); //stores usernames and passwords
     Context context = this;
+    String usernameStr;
+    Bundle loginBundle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +38,56 @@ public class LoginActivity extends AppCompatActivity {
         loginButton = (Button)findViewById(R.id.loginButton);
         userInput = (EditText)findViewById(R.id.username);
         passInput = (EditText)findViewById(R.id.password);
+        nextButton = (Button) findViewById(R.id.nextButton);
+        registerButton = (Button) findViewById(R.id.registerButton);
+
+        nextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                usernameStr = userInput.getText().toString();
+                if (users.containsKey(usernameStr)) {
+                    passInput.setVisibility(View.VISIBLE);
+                    passInput.setHint(R.string.passwordHint);
+                    loginButton.setVisibility(View.VISIBLE);
+                    nextButton.setVisibility(View.GONE);
+                }
+                else{
+                    Toast.makeText(getApplicationContext(), R.string.registerToast, Toast.LENGTH_SHORT).show();
+                    passInput.setVisibility(View.VISIBLE);
+                    passInput.setHint(R.string.setPasswordHint);
+                    registerButton.setVisibility(View.VISIBLE);
+                    nextButton.setVisibility(View.GONE);
+
+
+                }
+            }
+        });
+
+        registerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Toast.makeText(getApplicationContext(), R.string.registerThanks, Toast.LENGTH_SHORT).show();
+
+                //register user
+                users.put(usernameStr, passInput.getText().toString());
+
+                //Create Bundle to pass username to ControlActivity
+                loginBundle = new Bundle();
+                //assign the values (key, value pairs)
+                loginBundle.putString(context.getString(R.string.username), usernameStr);
+
+                //create intent for control activity
+                Intent intentControl = new Intent(LoginActivity.this, ControlActivity.class);
+
+                //assign the bundle to the intent
+                intentControl.putExtras(loginBundle);
+
+                //launch control activity
+                LoginActivity.this.startActivity(intentControl);
+            }
+        });
+
 
         //set login button callback
         loginButton.setOnClickListener(new View.OnClickListener() {
@@ -43,12 +95,13 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 //conditional to test if user and password are correct
-                String usernameStr = userInput.getText().toString();
+                usernameStr = userInput.getText().toString();
                 if (users.containsKey(usernameStr) &&
                         passInput.getText().toString().equals(users.get(usernameStr)))
                         {
+
                             //Create Bundle to pass username to ControlActivity
-                            Bundle loginBundle = new Bundle();
+                            loginBundle = new Bundle();
                             //assign the values (key, value pairs)
                             loginBundle.putString(context.getString(R.string.username), usernameStr);
 

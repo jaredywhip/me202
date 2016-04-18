@@ -33,7 +33,7 @@
         android:layout_height="wrap_content"
         android:textSize="12pt"
         android:textAlignment="center"
-        android:hint="@string/passwordHint"
+
         android:inputType="textPassword"
         android:ems="10"
         android:layout_below="@id/username"
@@ -42,6 +42,7 @@
         android:textColorHint="@color/whitesmoke"
         android:singleLine="true"
         android:imeOptions="actionNext"
+        android:visibility="invisible"
         />
 
     <Button
@@ -55,6 +56,32 @@
         android:layout_marginTop="20dp"
         android:background="@color/whitesmoke"
         android:textColor="@color/darkgray"
+        android:visibility="invisible"
+        />
+
+    <Button
+        android:id="@+id/nextButton"
+        android:layout_width="250dp"
+        android:textSize="12pt"
+        android:layout_height="wrap_content"
+        android:text="@string/nextText"
+        android:background="@color/whitesmoke"
+        android:textColor="@color/darkgray"
+        android:layout_above="@+id/loginButton"
+        android:layout_alignStart="@+id/password" />
+
+    <Button
+        android:id="@+id/registerButton"
+        android:layout_width="250dp"
+        android:textSize="12pt"
+        android:layout_height="wrap_content"
+        android:text="@string/register"
+        android:layout_below="@id/password"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:background="@color/whitesmoke"
+        android:textColor="@color/darkgray"
+        android:visibility="invisible"
         />
 
 </RelativeLayout>

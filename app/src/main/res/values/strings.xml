@@ -9,7 +9,12 @@
     <string name="username">username</string>
     <string name="usernameHint">username</string>
     <string name="passwordHint">password</string>
+    <string name="setPasswordHint">set Password</string>
     <string name="loginText">login</string>
+    <string name="nextText">Enter</string>
+    <string name="register">register</string>
+    <string name="registerToast">Username not recognized. Please register.</string>
+    <string name="registerThanks">Thanks for registering!</string>
     <string name="incorrectLogin">Incorrect username or password</string>
 
     <!-- ControlActivity Strings-->
