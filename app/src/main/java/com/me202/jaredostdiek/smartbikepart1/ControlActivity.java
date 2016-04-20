@@ -20,6 +20,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,7 +36,8 @@ import java.util.logging.Handler;
 
 public class ControlActivity extends AppCompatActivity {
 
-    Button unlockButton, historyButton, lightStateButton, lightModeButton;
+    Button unlockButton, historyButton;
+    ToggleButton lightStateButton, lightModeButton;
     Context context = this;
     private final static int REQUEST_ENABLE_BT = 1; //used for enable BLE popup
     private BluetoothAdapter mBluetoothAdapter;
@@ -49,17 +51,22 @@ public class ControlActivity extends AppCompatActivity {
     public static UUID TX_UUID = UUID.fromString("6E400002-B5A3-F393-E0A9-E50E24DCCA9E");
     public static UUID RX_UUID = UUID.fromString("6E400003-B5A3-F393-E0A9-E50E24DCCA9E");
     public static UUID CLIENT_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
+    private BluetoothGattCharacteristic tx;
 
     public static String bluefruitMacAddr = "F0:E5:B2:9B:91:A5";
     private Boolean autoConnectBoolean = false;
     TextView connectionState, autoTextView, onTextView, solidTextView, blinkingTextView;
     private Boolean deviceFound = false;
+    private byte lightModeByte = 00; //solid
+    private byte lightStateByte = 00; //auto
+    private static byte startByte = 99;
+    private static byte endByte = 77;
 
     private static final int STATE_DISCONNECTED = 0;
     private static final int STATE_CONNECTING = 1;
     private static final int STATE_CONNECTED = 2;
 
-    private boolean mScanning;
+    private boolean writingFlag;
     private Handler mHandler;
 
     // Stops scanning after 10 seconds.
@@ -143,8 +150,7 @@ public class ControlActivity extends AppCompatActivity {
                 // Notify connection failure if service discovery failed
                 if (status == BluetoothGatt.GATT_FAILURE) {return;}
                 // Save reference to each UART characteristic, module level
-                BluetoothGattCharacteristic tx =
-                        gatt.getService(UART_UUID).getCharacteristic(TX_UUID);
+                tx = gatt.getService(UART_UUID).getCharacteristic(TX_UUID);
                 if (!gatt.setCharacteristicNotification(tx, true)) {
                     return;}
                 BluetoothGattDescriptor desc =
@@ -156,6 +162,16 @@ public class ControlActivity extends AppCompatActivity {
                 // Success!
 
             }
+
+            @Override
+            public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+                super.onCharacteristicWrite(gatt, characteristic, status);
+                    if (status != BluetoothGatt.GATT_SUCCESS) {
+                        //error handling
+                    }
+                    writingFlag = false;
+                }
+
         };
 
         //scan callback method
@@ -180,6 +196,8 @@ public class ControlActivity extends AppCompatActivity {
             }
 
         };
+
+
 
         //create unlock button and set callback
         unlockButton = (Button) findViewById(R.id.unlockButton);
@@ -272,7 +290,46 @@ public class ControlActivity extends AppCompatActivity {
             }
         });
 
+        lightStateButton = (ToggleButton) findViewById(R.id.toggleLightState);
+        lightStateButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (lightStateButton.isChecked()) {
+                    lightStateByte = 01; //on
+                    byte[] data = {startByte, lightStateByte, lightModeByte, endByte};
+                    tx.setValue(data);
+                    writingFlag = true;
+                    mBluetoothGatt.writeCharacteristic(tx);
+                } else {
+                    lightStateByte = 00; //auto
+                    byte[] data = {startByte, lightStateByte, lightModeByte, endByte};
+                    tx.setValue(data);
+                    writingFlag = true;
+                    mBluetoothGatt.writeCharacteristic(tx);
+                }
+            }
+        });
 
+        lightModeButton = (ToggleButton) findViewById(R.id.toggleLightMode);
+        lightModeButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (lightModeButton.isChecked()){
+                    lightModeByte = 01; //blinking
+                    byte[] data = {startByte, lightStateByte, lightModeByte, endByte};
+                    tx.setValue(data);
+                    writingFlag = true;
+                    mBluetoothGatt.writeCharacteristic(tx);
+                }
+                else{
+                    lightModeByte = 00; //solid
+                    byte[] data = {startByte, lightStateByte, lightModeByte, endByte};
+                    tx.setValue(data);
+                    writingFlag = true;
+                    mBluetoothGatt.writeCharacteristic(tx);
+                }
+            }
+        });
 
 
         //create unlock button and set callback
@@ -280,13 +337,6 @@ public class ControlActivity extends AppCompatActivity {
         historyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                //temp code test for send data
-                tx.setValue(byte[] data);
-                writingFlag = true;
-                Gatt.writeCharacteristic(tx);
-
-
 
                 //create intent for control activity
                 Intent intentHistory = new Intent(ControlActivity.this, RideHistoryActivity.class);
@@ -296,13 +346,7 @@ public class ControlActivity extends AppCompatActivity {
 
         });
 
-        lightModeButton = (Button) findViewById(R.id.toggleLightMode);
-        lightModeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
 
-            }
-        });
 
 
 
@@ -359,6 +403,24 @@ public class ControlActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        disconnect();
+    }
+
+
+    public void disconnect() {
+        if (mBluetoothGatt != null) {
+            mBluetoothGatt.disconnect();
+        }
+        mBluetoothGatt = null;
+        tx = null;
+        //rx = null;
+    }
+
+    //add adjust pan orientation to manifest so it doesnt reload activity with phone turns
+    //add check for disconnect
 }
 
 
