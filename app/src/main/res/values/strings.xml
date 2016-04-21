@@ -9,7 +9,7 @@
     <string name="username">username</string>
     <string name="usernameHint">username</string>
     <string name="passwordHint">password</string>
-    <string name="setPasswordHint">set Password</string>
+    <string name="setPasswordHint">set password</string>
     <string name="loginText">login</string>
     <string name="nextText">Enter</string>
     <string name="register">register</string>

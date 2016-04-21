@@ -320,7 +320,6 @@ public class ControlActivity extends AppCompatActivity {
             }
         });
 
-
         //create unlock button and set callback
         historyButton = (Button) findViewById(R.id.historyButton);
         historyButton.setOnClickListener(new View.OnClickListener() {
@@ -331,10 +330,7 @@ public class ControlActivity extends AppCompatActivity {
                 //launch ride history activity
                 ControlActivity.this.startActivity(intentHistory);
             }
-
         });
-
-
     }
 
     public void initializeTimerTask() {

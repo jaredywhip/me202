@@ -87,7 +87,6 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-
         //set login button callback
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
