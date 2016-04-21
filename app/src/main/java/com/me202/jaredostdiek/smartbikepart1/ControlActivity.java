@@ -25,6 +25,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 //java imports
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Handler;
 import java.util.UUID;
 
@@ -63,6 +65,8 @@ public class ControlActivity extends AppCompatActivity {
     private static byte startByte = 99;
     private static byte endByte = 77;
     private boolean writingFlag;
+    Timer timerSendData;
+    TimerTask timerTaskSendData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,7 +140,7 @@ public class ControlActivity extends AppCompatActivity {
                     return;}
                 BluetoothGattDescriptor txDesc = tx.getDescriptor(CLIENT_UUID);
 
-                if (txDesc == null) {return;}
+                //if (txDesc == null) {return;}
 
                 //define rx
                 rx = gatt.getService(UART_UUID).getCharacteristic(RX_UUID);
@@ -144,14 +148,23 @@ public class ControlActivity extends AppCompatActivity {
                     return;}
                 BluetoothGattDescriptor rxDesc = rx.getDescriptor(CLIENT_UUID);
 
-                if (rxDesc == null) {return;}
+                //if (rxDesc == null) {return;}
 
-                txDesc.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                if (!gatt.writeDescriptor(txDesc)) {return;}
+                //txDesc.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                //if (!gatt.writeDescriptor(txDesc)) {return;}
 
                 rxDesc.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
                 if (!gatt.writeDescriptor(rxDesc)) {return;}
                 // Success!
+
+                //set timer for data heartbeat
+                timerSendData = new Timer();
+
+                //set up timerTask
+                initializeTimerTask();
+
+                //schedule data send
+                timerSendData.schedule(timerTaskSendData, 1000, 1000);
             }
 
             @Override
@@ -185,7 +198,6 @@ public class ControlActivity extends AppCompatActivity {
 
                     //connnect gatt
                     mBluetoothGatt = device.connectGatt(context, autoConnectBoolean, mGattCallBack);
-
                 }
             }
         };
@@ -292,14 +304,13 @@ public class ControlActivity extends AppCompatActivity {
         lightModeButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (lightModeButton.isChecked()){
+                if (lightModeButton.isChecked()) {
                     lightModeByte = 01; //blinking
                     byte[] data = {startByte, lightStateByte, lightModeByte, endByte};
                     tx.setValue(data);
                     writingFlag = true;
                     mBluetoothGatt.writeCharacteristic(tx);
-                }
-                else{
+                } else {
                     lightModeByte = 00; //solid
                     byte[] data = {startByte, lightStateByte, lightModeByte, endByte};
                     tx.setValue(data);
@@ -322,6 +333,21 @@ public class ControlActivity extends AppCompatActivity {
             }
 
         });
+
+
+    }
+
+    public void initializeTimerTask() {
+        timerTaskSendData = new TimerTask() {
+            @Override
+            public void run() {
+                //send data to ble
+                byte[] data = {startByte, lightStateByte, lightModeByte, endByte};
+                tx.setValue(data);
+                writingFlag = true;
+                mBluetoothGatt.writeCharacteristic(tx);
+            }
+        };
     }
 
     //method to enable/disable buttons depending on connection state
