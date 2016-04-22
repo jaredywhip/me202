@@ -13,7 +13,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.nfc.Tag;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,12 +25,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 //java imports
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Vector;
 import java.util.logging.Handler;
 import java.util.UUID;
 
@@ -67,6 +73,10 @@ public class ControlActivity extends AppCompatActivity {
     private boolean writingFlag;
     Timer timerSendData;
     TimerTask timerTaskSendData;
+
+    //recieved moving and accel data
+    private double accelData;
+    private boolean moving;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -176,6 +186,60 @@ public class ControlActivity extends AppCompatActivity {
                     }
                     writingFlag = false;
                 }
+
+            @Override
+            public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+                super.onCharacteristicChanged(gatt, characteristic);
+                String movingPacket = characteristic.getStringValue(0);
+                Log.i("onCharacteristicChanged", movingPacket);
+
+                //get moving and accel data and parse the string
+                String[] separatedMovingPacket = movingPacket.split(":");
+                if (separatedMovingPacket[0].equals("1")){
+                    moving = true;
+                } else {
+                    moving = false;
+                }
+                //moving = Boolean.valueOf(separatedMovingPacket[0]);
+                accelData = Double.parseDouble(separatedMovingPacket[1]);
+                Log.i("moving", separatedMovingPacket[0]);
+                Log.i("accelData", separatedMovingPacket[1]);
+
+
+                //respond if moving
+                if (moving) {
+
+                    Log.i("inif", separatedMovingPacket[0]);
+                    Vibrator vib = (Vibrator) getSystemService(context.VIBRATOR_SERVICE);
+                    vib.vibrate(200);
+                    if (vib.hasVibrator()){
+                        vib.vibrate(200);
+                    }
+
+                    //update view
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            //stuff that updates ui
+                            Log.i("updatebackcolor", "word");
+
+                            RelativeLayout controlLayout = (RelativeLayout) findViewById(R.id.controlLayout);
+                            controlLayout.setBackgroundColor(getResources().getColor(R.color.ligthGray));
+                        }
+                    });
+
+                } else {
+                    Log.i("inelse", separatedMovingPacket[0]);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            //stuff that updates ui
+                            RelativeLayout controlLayout = (RelativeLayout) findViewById(R.id.controlLayout);
+                            controlLayout.setBackgroundColor(getResources().getColor(R.color.whitesmoke));
+                        }
+                    });
+                }
+            }
         };
 
         //scan callback method
