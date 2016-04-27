@@ -25,7 +25,7 @@ public class HistoryDatabaseHandler extends SQLiteOpenHelper {
     private static final String LIST_HISTORY = "history";
 
     // Contacts Table Columns names
-    private static final String KEY_ID = "id"; //row number for each item
+    //private static final String KEY_ID = "id"; //row number for each item
     private static final String KEY_ICON_ID = "iconID";
     private static final String KEY_LOC = "location";
     private static final String KEY_DATE = "date";
@@ -39,7 +39,7 @@ public class HistoryDatabaseHandler extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         String CREATE_HISTORY_ITEM = "CREATE TABLE " + LIST_HISTORY + "("
-                + KEY_ID + " INTEGER PRIMARY KEY," + KEY_ICON_ID + " INTEGER,"
+                + KEY_FIRE_ID + " TEXT PRIMARY KEY," + KEY_ICON_ID + " INTEGER,"
                 + KEY_LOC + " TEXT," + KEY_DATE + " TEXT" + ")";
         db.execSQL(CREATE_HISTORY_ITEM);
     }
@@ -61,6 +61,7 @@ public class HistoryDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
+        //values.put(KEY_FIRE_ID, history.getFireID());
         values.put(KEY_ICON_ID, history.getIconID()); //icon id for history item
         values.put(KEY_LOC, history.getLocation()); //location of bike ride
         values.put(KEY_DATE, history.getDate()); //location of date of ride
@@ -74,13 +75,13 @@ public class HistoryDatabaseHandler extends SQLiteOpenHelper {
     public HistoryListItem getHistory(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor cursor = db.query(LIST_HISTORY, new String[] { KEY_ID,
-                        KEY_ICON_ID, KEY_LOC, KEY_DATE }, KEY_ID + "=?",
+        Cursor cursor = db.query(LIST_HISTORY, new String[] { KEY_FIRE_ID,
+                        KEY_ICON_ID, KEY_LOC, KEY_DATE }, KEY_FIRE_ID + "=?",
                 new String[] { String.valueOf(id) }, null, null, null, null);
         if (cursor != null)
             cursor.moveToFirst();
 
-        HistoryListItem history = new HistoryListItem(Integer.parseInt(cursor.getString(0)),
+        HistoryListItem history = new HistoryListItem(cursor.getString(0),
                 Integer.parseInt(cursor.getString(1)), cursor.getString(2), cursor.getString(3));
         // return contact
         return history;
@@ -96,8 +97,8 @@ public class HistoryDatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_DATE, history.getDate()); //location of date of ride
 
         // updating row
-        return db.update(LIST_HISTORY, values, KEY_ID + " = ?",
-                new String[] { String.valueOf(history.getID()) });
+        return db.update(LIST_HISTORY, values, KEY_FIRE_ID+ " = ?",
+                new String[] { String.valueOf(history.getFireID()) });
     }
 
     // Getting All rides
@@ -113,7 +114,8 @@ public class HistoryDatabaseHandler extends SQLiteOpenHelper {
         if (cursor.moveToLast()) {
             do {
                 HistoryListItem histItem = new HistoryListItem();
-                histItem.setID(Integer.parseInt(cursor.getString(0)));
+                //histItem.setID(Integer.parseInt(cursor.getString(0)));
+                histItem.setFireID(cursor.getString(0));
                 histItem.setIconID(Integer.parseInt(cursor.getString(1)));
                 histItem.setLocation(cursor.getString(2));
                 histItem.setDate(cursor.getString(3));
@@ -129,8 +131,9 @@ public class HistoryDatabaseHandler extends SQLiteOpenHelper {
     // Deleting single ride
     public void deleteHistory(HistoryListItem history) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(LIST_HISTORY, KEY_ID + " = ?",
-                new String[]{String.valueOf(history.getID())});
+        db.delete(LIST_HISTORY, KEY_FIRE_ID + " = ?",null);
+                //new String[]{String.valueOf(history.getFireID())});
+        //db.delete(LIST_HISTORY, KEY_FIRE_ID + " = ?",null);
         db.close();
     }
 

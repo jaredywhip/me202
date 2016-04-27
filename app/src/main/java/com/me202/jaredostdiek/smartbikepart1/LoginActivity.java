@@ -152,7 +152,7 @@ public class LoginActivity extends AppCompatActivity {
                                 Map<String, String> map = new HashMap<String, String>();
                                 map.put("provider", authData.getProvider());
                                 //map.put("email", userInput.getText().toString());
-                                myFirebaseRef.child("users").child(authData.getUid()).setValue(map);
+                                //myFirebaseRef.child("users").child(authData.getUid()).setValue(map);
 
                             }
 

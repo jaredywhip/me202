@@ -117,8 +117,6 @@ public class RideHistoryActivity extends Activity {
 
                     historyAdaptor = new HistoryArrayAdapter(RideHistoryActivity.this, history);
                     listViewHistory.setAdapter(historyAdaptor);
-
-
                 }
             }
 
@@ -158,6 +156,7 @@ public class RideHistoryActivity extends Activity {
                     //add item to the beginning of the list
                     histItem = new HistoryListItem(fireID, iconRandom, location, date);
                     histListItems.add(histItem);
+                    db.addHistory(histItem);
                     //update history adapter
                     history = db.getAllItems();
                     historyAdaptor = new HistoryArrayAdapter(RideHistoryActivity.this, history);
