@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import java.util.HashMap;
 import java.util.Map;
 
 import android.util.Log;
@@ -16,8 +15,6 @@ import android.widget.Toast;
 import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
-import com.firebase.client.DataSnapshot;
-import com.firebase.client.Query;
 
 
 /**
@@ -29,7 +26,6 @@ public class LoginActivity extends AppCompatActivity {
 
     Button loginButton, nextButton, registerButton;
     EditText userInput, passInput;
-    //Map<String,String > users = new HashMap(); //stores usernames and passwords
     Context context = this;
     String usernameStr;
     Bundle loginBundle;
@@ -43,9 +39,6 @@ public class LoginActivity extends AppCompatActivity {
         //create firebase reference
         myFirebaseRef = new Firebase("https://vivid-heat-8090.firebaseio.com/");
 
-        //add user and password to map
-        //users.put(context.getString(R.string.usersKeyJared), context.getString(R.string.usersValJared));
-
         //create objects for button and user inputs
         loginButton = (Button)findViewById(R.id.loginButton);
         userInput = (EditText)findViewById(R.id.username);
@@ -53,107 +46,73 @@ public class LoginActivity extends AppCompatActivity {
         nextButton = (Button) findViewById(R.id.nextButton);
         registerButton = (Button) findViewById(R.id.registerButton);
 
+        //when next button is pressed determine if already a user or need to register
         nextButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                usernameStr = userInput.getText().toString();
+              @Override
+              public void onClick(View v) {
+                  usernameStr = userInput.getText().toString();
 
-                //test if user email exists
-                myFirebaseRef.createUser(usernameStr, "test", new Firebase.ValueResultHandler<Map<String, Object>>() {
+                  //hack line to test if email is already in database
+                  myFirebaseRef.authWithPassword(usernameStr, "aakdafnngnkdjf129nf8vJaMmmadksn", new Firebase.AuthResultHandler() {
+                      @Override
+                      public void onAuthenticated(AuthData authData) {
+                      }
 
+                      //examine error code to determine if registered
+                      @Override
+                      public void onAuthenticationError(FirebaseError firebaseError) {
 
-                    @Override
-                    public void onError(FirebaseError firebaseError) {
+                          System.out.println("UserDoesNotExist: " + FirebaseError.USER_DOES_NOT_EXIST);
+                          System.out.println("InvalidPassword: " + FirebaseError.INVALID_PASSWORD);
+                          System.out.println("error: " + firebaseError.getCode());
 
-                        System.out.println("Email taken error coe: " + FirebaseError.EMAIL_TAKEN);
-                        System.out.println("error: " + FirebaseError.INVALID_EMAIL);
-                        System.out.println("error: " + firebaseError.getCode());
+                          switch (firebaseError.getCode()) {
 
-                        //hack line to check if the user email is alread taken assume they are registered
-                        if (firebaseError.getCode() == FirebaseError.EMAIL_TAKEN) {
-                            //already registered case
-                            passInput.setVisibility(View.VISIBLE);
-                            passInput.setHint(R.string.passwordHint);
-                            loginButton.setVisibility(View.VISIBLE);
-                            nextButton.setVisibility(View.GONE);
-                        }
-                        else {
-                            //have user register
-                            Toast.makeText(getApplicationContext(), R.string.registerToast, Toast.LENGTH_LONG).show();
-                            passInput.setVisibility(View.VISIBLE);
-                            passInput.setHint(R.string.setPasswordHint);
-                            registerButton.setVisibility(View.VISIBLE);
-                            nextButton.setVisibility(View.GONE);
-                        }
-                    }
+                              //show user to register buttons
+                              case FirebaseError.USER_DOES_NOT_EXIST:
+                                  // have user register
+                                  Toast.makeText(getApplicationContext(), R.string.registerToast, Toast.LENGTH_LONG).show();
+                                  passInput.setVisibility(View.VISIBLE);
+                                  passInput.setHint(R.string.setPasswordHint);
+                                  registerButton.setVisibility(View.VISIBLE);
+                                  nextButton.setVisibility(View.GONE);
+                                  break;
 
-                    @Override
-                    public void onSuccess(Map<String, Object> stringObjectMap) {
+                              //already registered. show login buttons
+                              case FirebaseError.INVALID_PASSWORD:
+                                  //already registered case
+                                  passInput.setVisibility(View.VISIBLE);
+                                  passInput.setHint(R.string.passwordHint);
+                                  loginButton.setVisibility(View.VISIBLE);
+                                  nextButton.setVisibility(View.GONE);
+                                  break;
 
-                    }
-                });
-
-//                //test if user email exists
-//                myFirebaseRef.createUser(usernameStr, "test", new Firebase.ValueResultHandler<Map<String, Object>>() {
-//
-//
-//                    @Override
-//                    public void onError(FirebaseError firebaseError) {
-//
-//                        System.out.println("Email taken error coe: " + FirebaseError.EMAIL_TAKEN);
-//                        System.out.println("error: " + FirebaseError.INVALID_EMAIL);
-//                        System.out.println("error: " + firebaseError.getCode());
-//
-//                        //hack line to check if the user email is alread taken assume they are registered
-//                        if (firebaseError.getCode() == FirebaseError.EMAIL_TAKEN) {
-//                            //already registered case
-//                            passInput.setVisibility(View.VISIBLE);
-//                            passInput.setHint(R.string.passwordHint);
-//                            loginButton.setVisibility(View.VISIBLE);
-//                            nextButton.setVisibility(View.GONE);
-//                        }
-//                        else {
-//                            //have user register
-//                            Toast.makeText(getApplicationContext(), R.string.registerToast, Toast.LENGTH_LONG).show();
-//                            passInput.setVisibility(View.VISIBLE);
-//                            passInput.setHint(R.string.setPasswordHint);
-//                            registerButton.setVisibility(View.VISIBLE);
-//                            nextButton.setVisibility(View.GONE);
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onSuccess(Map<String, Object> stringObjectMap) {
-//
-//                    }
-//                });
-            }
-        });
+                              default:
+                                  // handle other errors
+                                  break;
+                          }
+                      }
+                  });
+              }
+          });
 
         //register new user
         registerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                //register user
-                //users.put(usernameStr, passInput.getText().toString());
-
                 //create a new firebase user
-                myFirebaseRef.createUser(userInput.getText().toString(), passInput.getText().toString() , new Firebase.ValueResultHandler<Map<String,Object>>() {
+                myFirebaseRef.createUser(userInput.getText().toString(), passInput.getText().toString(), new Firebase.ValueResultHandler<Map<String, Object>>() {
 
                     @Override
                     public void onSuccess(Map<String, Object> result) {
                         System.out.println("Successfully created user account with uid: " + result.get("uid"));
+
                         //authenticate user
                         myFirebaseRef.authWithPassword(userInput.getText().toString(), passInput.getText().toString(), new Firebase.AuthResultHandler() {
                             @Override
                             public void onAuthenticated(AuthData authData) {
                                 //authenticated successfully
-                                Map<String, String> map = new HashMap<String, String>();
-                                map.put("provider", authData.getProvider());
-                                //map.put("email", userInput.getText().toString());
-                                //myFirebaseRef.child("users").child(authData.getUid()).setValue(map);
-
                             }
 
                             @Override
@@ -204,11 +163,6 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     public void onAuthenticated(AuthData authData) {
                         //authenticated successfully
-                        //Map<String, String> map = new HashMap<String, String>();
-                        //map.put("provider", authData.getProvider());
-                        //map.put("more", "more");
-                        //myFirebaseRef.child("users").child(authData.getUid()).setValue(map);
-
                         //Create Bundle to pass username to ControlActivity
                         loginBundle = new Bundle();
                         //assign the values (key, value pairs)
@@ -231,12 +185,16 @@ public class LoginActivity extends AppCompatActivity {
 
                         //something went wrong
                         Log.i("onAuthenticatedError", "Error authenticating");
-                        passInput.setText("");
-                        //display toast for incorrect login attempt
-                        Toast.makeText(getApplicationContext(), R.string.incorrectLogin, Toast.LENGTH_SHORT).show();
+
+                        if (firebaseError.getCode() == firebaseError.INVALID_PASSWORD) {
+                            passInput.setText("");
+                            //display toast for incorrect login attempt
+                            Toast.makeText(getApplicationContext(), R.string.incorrectLogin, Toast.LENGTH_SHORT).show();
+                        }else{
+                            Toast.makeText(getApplicationContext(), R.string.somethingWrong, Toast.LENGTH_SHORT).show();
+                        }
                     }
                 });
-
             }
         });
     }

@@ -17,6 +17,7 @@
     <string name="registerToast">Username not recognized. Please register.</string>
     <string name="registerThanks">Thanks for registering!</string>
     <string name="incorrectLogin">Incorrect password. Try again.</string>
+    <string name="somethingWrong">Something is wrong. Check email and try again.</string>
 
     <!-- ControlActivity Strings-->
     <string name="bikeID"> Bike ID: \u0020</string>
