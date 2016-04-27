@@ -16,6 +16,8 @@ import android.widget.Toast;
 import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
+import com.firebase.client.DataSnapshot;
+import com.firebase.client.Query;
 
 
 /**
@@ -58,10 +60,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 //test if user email exists
                 myFirebaseRef.createUser(usernameStr, "test", new Firebase.ValueResultHandler<Map<String, Object>>() {
-                    @Override
-                    public void onSuccess(Map<String, Object> stringObjectMap) {
 
-                    }
 
                     @Override
                     public void onError(FirebaseError firebaseError) {
@@ -87,7 +86,47 @@ public class LoginActivity extends AppCompatActivity {
                             nextButton.setVisibility(View.GONE);
                         }
                     }
+
+                    @Override
+                    public void onSuccess(Map<String, Object> stringObjectMap) {
+
+                    }
                 });
+
+//                //test if user email exists
+//                myFirebaseRef.createUser(usernameStr, "test", new Firebase.ValueResultHandler<Map<String, Object>>() {
+//
+//
+//                    @Override
+//                    public void onError(FirebaseError firebaseError) {
+//
+//                        System.out.println("Email taken error coe: " + FirebaseError.EMAIL_TAKEN);
+//                        System.out.println("error: " + FirebaseError.INVALID_EMAIL);
+//                        System.out.println("error: " + firebaseError.getCode());
+//
+//                        //hack line to check if the user email is alread taken assume they are registered
+//                        if (firebaseError.getCode() == FirebaseError.EMAIL_TAKEN) {
+//                            //already registered case
+//                            passInput.setVisibility(View.VISIBLE);
+//                            passInput.setHint(R.string.passwordHint);
+//                            loginButton.setVisibility(View.VISIBLE);
+//                            nextButton.setVisibility(View.GONE);
+//                        }
+//                        else {
+//                            //have user register
+//                            Toast.makeText(getApplicationContext(), R.string.registerToast, Toast.LENGTH_LONG).show();
+//                            passInput.setVisibility(View.VISIBLE);
+//                            passInput.setHint(R.string.setPasswordHint);
+//                            registerButton.setVisibility(View.VISIBLE);
+//                            nextButton.setVisibility(View.GONE);
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onSuccess(Map<String, Object> stringObjectMap) {
+//
+//                    }
+//                });
             }
         });
 
@@ -112,8 +151,9 @@ public class LoginActivity extends AppCompatActivity {
                                 //authenticated successfully
                                 Map<String, String> map = new HashMap<String, String>();
                                 map.put("provider", authData.getProvider());
-                                map.put("more", "more");
+                                //map.put("email", userInput.getText().toString());
                                 myFirebaseRef.child("users").child(authData.getUid()).setValue(map);
+
                             }
 
                             @Override
@@ -164,10 +204,10 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     public void onAuthenticated(AuthData authData) {
                         //authenticated successfully
-                        Map<String, String> map = new HashMap<String, String>();
-                        map.put("provider", authData.getProvider());
-                        map.put("more", "more");
-                        myFirebaseRef.child("users").child(authData.getUid()).setValue(map);
+                        //Map<String, String> map = new HashMap<String, String>();
+                        //map.put("provider", authData.getProvider());
+                        //map.put("more", "more");
+                        //myFirebaseRef.child("users").child(authData.getUid()).setValue(map);
 
                         //Create Bundle to pass username to ControlActivity
                         loginBundle = new Bundle();

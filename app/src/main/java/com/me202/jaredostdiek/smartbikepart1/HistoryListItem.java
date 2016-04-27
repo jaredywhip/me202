@@ -10,21 +10,30 @@ public class HistoryListItem {
     private String date;
     private String location;
     private int iconID;
+    private String fireID;
 
     public HistoryListItem(){
     }
 
-    public HistoryListItem(int ID, int iconID, String loc, String d){
+    public HistoryListItem(int ID, int iconID, String loc, String d, String fireID){
         this.ID = ID;
         this.iconID = iconID;
         this.location = loc;
         this.date = d;
+        this.fireID = fireID;
     }
 
-    public HistoryListItem(int iconID, String loc, String d){
+//    public HistoryListItem(int iconID, String loc, String d){
+//        this.iconID = iconID;
+//        this.location = loc;
+//        this.date = d;
+//    }
+
+    public HistoryListItem(int iconID, String loc, String d, String fireID){
         this.iconID = iconID;
         this.location = loc;
         this.date = d;
+        this.fireID = fireID;
     }
 
     //get and set methods
@@ -33,28 +42,20 @@ public class HistoryListItem {
 
     public void setID(int ID) { this.ID = ID;}
 
-    public int getIconID() {
-        return iconID;
-    }
+    public int getIconID() {return iconID;}
 
-    public void setIconID(int iconID) {
-        this.iconID = iconID;
-    }
+    public void setIconID(int iconID) {this.iconID = iconID;}
 
-    public String getLocation() {
-        return location;
-    }
+    public String getLocation() {return location;}
 
-    public void setLocation(String location) {
-        this.location = location;
-    }
+    public void setLocation(String location) {this.location = location;}
 
-    public String getDate() {
-        return date;
-    }
+    public String getDate() {return date; }
 
-    public void setDate(String date) {
-        this.date = date;
-    }
+    public void setDate(String date) {this.date = date;}
+
+    public void setFireID(String fireID) {this.fireID = fireID;}
+
+    public String getFireID() {return fireID; }
 
 }
