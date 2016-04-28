@@ -10,7 +10,7 @@
         android:theme="@style/AppTheme"
         android:name=".MyApp">
 
-        <activity android:name=".LoginActivity">
+        <activity android:name=".LoginActivity" android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -20,7 +20,6 @@
         <activity android:name=".ControlActivity" />
         <activity android:name=".RideHistoryActivity"></activity>
     </application>
-
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />

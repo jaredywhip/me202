@@ -20,11 +20,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Random;
 import java.text.SimpleDateFormat;
 //library imports
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.AuthData;
@@ -45,10 +43,9 @@ public class RideHistoryActivity extends Activity {
     private HistoryListItem histItem;
     //create array of list item objects
     private ArrayList<HistoryListItem> histListItems = new ArrayList<HistoryListItem>();
-    HistoryDatabaseHandler db;
+    HistorySQLHandler db;
     ArrayList<HistoryListItem> history;
     Firebase myFirebaseRef;
-    Map<String, Object> historyMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,18 +54,22 @@ public class RideHistoryActivity extends Activity {
 
         //create a reference to the Firebase database
         myFirebaseRef = new Firebase("https://vivid-heat-8090.firebaseio.com/");
+
+        //get current firebase user
         AuthData authData = myFirebaseRef.getAuth();
         final String userID = authData.getUid();
         System.out.println("userID: " + userID);
-        db = new HistoryDatabaseHandler(context);
+
+        //create sql database and delete any previously stored values
+        db = new HistorySQLHandler(context);
         db.deleteAllHistory();
 
-        //instantiate our custom adapter
+        //instantiate our custom adapter for the listview
         historyAdaptor = new HistoryArrayAdapter(this, histListItems);
         final ListView listViewHistory = (ListView) findViewById(R.id.historyListView);
         listViewHistory.setAdapter(historyAdaptor);
 
-        //create new tread to process image
+        //create new tread to process user image
         new Thread(new Runnable() {
             public void run() {
                 //create bitmap from image with less resolution to reduce memory required
@@ -78,11 +79,16 @@ public class RideHistoryActivity extends Activity {
 
                 //Add circle mask
                 CircleCrop riderImageCircle = new CircleCrop();
-                Bitmap riderBitmapCircle = riderImageCircle.transform(riderBitmap);
+                final Bitmap riderBitmapCircle = riderImageCircle.transform(riderBitmap);
 
-                //set imageview picture
-                ImageView riderImage = (ImageView) findViewById(R.id.riderImageView);
-                riderImage.setImageBitmap(riderBitmapCircle);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //set imageview picture
+                        ImageView riderImage = (ImageView) findViewById(R.id.riderImageView);
+                        riderImage.setImageBitmap(riderBitmapCircle);
+                    }
+                });
             }
             }).start();
 
@@ -90,118 +96,85 @@ public class RideHistoryActivity extends Activity {
         locEditText = (EditText) findViewById(R.id.locationEditText);
         addLocFloat = (ButtonFloat) findViewById(R.id.addLocButtonFloat);
 
-        //reading data single query slide. add listener for single value event.
-        //then add data to sql
-
-//        myFirebaseRef.child("users").child(userID).child("rideHistory").addListenerForSingleValueEvent(new ValueEventListener() {
+        //add firebase data to local sql data base. run only once.
         myFirebaseRef.child("users").child(userID).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                //db.deleteAllHistory();
                 System.out.println("dataSnapshot: " + dataSnapshot);
+
+                //get users rides and store in sql table
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                     HistoryListItem post = postSnapshot.getValue(HistoryListItem.class);
-                    System.out.println("postSnapshot: " + post.getFireID());
                     db.addHistory(post);
-                    histListItems.add(histItem);
-
-                    //List<HistoryListItem> history = db.getAllItems();
-                    history = db.getAllItems();
-
-                    for (HistoryListItem hs : history) {
-                        String log = "FireID: " + hs.getFireID() + " ,IconID: " + hs.getIconID() + " ,Location: " + hs.getLocation()
-                                + " ,Date: " + hs.getDate();
-                        //Writing Contacts to log
-                        Log.d("Name: ", log);
-                    }
-
-                    historyAdaptor = new HistoryArrayAdapter(RideHistoryActivity.this, history);
-                    listViewHistory.setAdapter(historyAdaptor);
+                    histListItems.add(post);
                 }
+
+                //add history to local sql and load listview
+                history = db.getAllItems();
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        historyAdaptor = new HistoryArrayAdapter(RideHistoryActivity.this, history);
+                        listViewHistory.setAdapter(historyAdaptor);
+                    }
+                });
+
             }
 
             @Override
             public void onCancelled(FirebaseError firebaseError) {
-
+                Log.d("onCancelled: ", firebaseError.toString());
             }
         });
-
-
-
-
-
 
         //create listener for the button to add a ride location
         addLocFloat.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
+                //get user input location
                 String location = locEditText.getText().toString();
 
                 if (!location.matches("")) {
+
                     //add items to HistoryListItem class
-                    String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+                    final String date = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
                     Random rand = new Random();
                     int iconRandom = rand.nextInt(2);
-
                     if (iconRandom == 0) {
                         iconRandom = R.drawable.fastclock;
                     } else {
                         iconRandom = R.drawable.beachcruiser;
                     }
 
-                    //firebase id
-                    String fireID = myFirebaseRef.child("users").child(userID).getKey();
+                    //create new ride history item
+                    histItem = new HistoryListItem(iconRandom, location, date);
 
-                    //add item to the beginning of the list
-                    histItem = new HistoryListItem(fireID, iconRandom, location, date);
+                    //create map of ride object
+                    Map<String, Object> map = new HashMap<String, Object>();
+                    map.put("historyItem", histItem);
+
+                    //get unique storage id from firebase for history item
+                    Firebase ridePostRef = myFirebaseRef.child("users").child(userID);
+                    Firebase newRidePostRef = ridePostRef.push();
+                    newRidePostRef.setValue(histItem);
+
+                    // Get the unique ID generated by push()
+                    String postId = newRidePostRef.getKey();
+
+                    //store the unique firebase id in the item
+                    histItem.setFireID(postId);
+                    newRidePostRef.setValue(histItem);
+
+                    //add to ride history array
                     histListItems.add(histItem);
                     db.addHistory(histItem);
-                    //update history adapter
+
+                    //update history adapter for the listview
                     history = db.getAllItems();
                     historyAdaptor = new HistoryArrayAdapter(RideHistoryActivity.this, history);
                     listViewHistory.setAdapter(historyAdaptor);
-
-                    //add item to firebase
-
-                    System.out.println("userID: " + userID);
-                    Map<String, Object> map = new HashMap<String, Object>();
-                    map.put("historyItem", histItem);
-                    //historyMap = new ObjectMapper().convertValue(histItem, Map.class);
-                    //myFirebaseRef.child("users").child(userID).child("rideHistory").push().setValue(histItem);
-                    myFirebaseRef.child("users").child(userID).push().setValue(histItem);
-
-//                    // callback
-//                    myFirebaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
-//                        @Override
-//                        public void onDataChange(DataSnapshot dataSnapshot) {
-//                            //add to sql arraylist
-//                            // Inserting Contacts
-//                            Log.d("Insert: ", "Inserting ..");
-//                            db.addHistory(histItem);
-//
-//                            // Reading all contacts
-//                            Log.d("Reading: ", "Reading all contacts..");
-//                            history = db.getAllItems();
-//
-//                            for (HistoryListItem hs : history) {
-//                                String log = "FireID: " + hs.getFireID() + " ,IconID: " + hs.getIconID() + " ,Location: " + hs.getLocation()
-//                                        + " ,Date: " + hs.getDate();
-//
-//                                //Writing Contacts to log
-//                                Log.d("Name: ", log);
-//                            }
-//                        }
-//
-//                        @Override
-//                        public void onCancelled(FirebaseError firebaseError) {
-//
-//                        }
-//                    });
-
-
-
-
 
                     //clear textEdit field
                     locEditText.setText("");
@@ -219,10 +192,13 @@ public class RideHistoryActivity extends Activity {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
 
-                Log.d("long clicked", "pos: " + position);
-
                 //delete item from list
-                HistoryListItem deleteItem = history.get(position);
+                HistoryListItem deleteItem = historyAdaptor.getItem(position); //history.get(position);
+
+                //remove item from firebase database
+                myFirebaseRef.child("users").child(userID).child(deleteItem.getFireID()).removeValue();
+
+                //remove item for sql
                 db.deleteHistory(deleteItem);
 
                 //update history adapter
@@ -236,12 +212,23 @@ public class RideHistoryActivity extends Activity {
                 return false;
             }
         });
+    }
 
-        }
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        //load sql data base on resume
+        history = db.getAllItems();
+        historyAdaptor = new HistoryArrayAdapter(RideHistoryActivity.this, history);
+        final ListView listViewHistory = (ListView) findViewById(R.id.historyListView);
+        listViewHistory.setAdapter(historyAdaptor);
+    }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
         //delete sql database
         db.deleteAllHistory();
     }

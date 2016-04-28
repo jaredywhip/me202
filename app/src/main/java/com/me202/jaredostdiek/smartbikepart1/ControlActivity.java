@@ -13,9 +13,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
@@ -32,8 +29,6 @@ import android.widget.ToggleButton;
 //java imports
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.Vector;
-import java.util.logging.Handler;
 import java.util.UUID;
 
 /**
@@ -150,18 +145,11 @@ public class ControlActivity extends AppCompatActivity {
                     return;}
                 BluetoothGattDescriptor txDesc = tx.getDescriptor(CLIENT_UUID);
 
-                //if (txDesc == null) {return;}
-
                 //define rx
                 rx = gatt.getService(UART_UUID).getCharacteristic(RX_UUID);
                 if (!gatt.setCharacteristicNotification(rx, true)) {
                     return;}
                 BluetoothGattDescriptor rxDesc = rx.getDescriptor(CLIENT_UUID);
-
-                //if (rxDesc == null) {return;}
-
-                //txDesc.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                //if (!gatt.writeDescriptor(txDesc)) {return;}
 
                 rxDesc.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
                 if (!gatt.writeDescriptor(rxDesc)) {return;}
@@ -205,10 +193,10 @@ public class ControlActivity extends AppCompatActivity {
                 Log.i("moving", separatedMovingPacket[0]);
                 Log.i("accelData", separatedMovingPacket[1]);
 
-
                 //respond if moving
                 if (moving) {
 
+                    //vibrate the phone
                     Log.i("inif", separatedMovingPacket[0]);
                     Vibrator vib = (Vibrator) getSystemService(context.VIBRATOR_SERVICE);
                     vib.vibrate(200);
@@ -222,7 +210,6 @@ public class ControlActivity extends AppCompatActivity {
                         public void run() {
                             //stuff that updates ui
                             Log.i("updatebackcolor", "word");
-
                             RelativeLayout controlLayout = (RelativeLayout) findViewById(R.id.controlLayout);
                             controlLayout.setBackgroundColor(getResources().getColor(R.color.ligthGray));
                         }
