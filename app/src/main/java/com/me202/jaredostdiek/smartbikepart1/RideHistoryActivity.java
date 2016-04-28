@@ -119,7 +119,6 @@ public class RideHistoryActivity extends Activity {
                         listViewHistory.setAdapter(historyAdaptor);
                     }
                 });
-
             }
 
             @Override

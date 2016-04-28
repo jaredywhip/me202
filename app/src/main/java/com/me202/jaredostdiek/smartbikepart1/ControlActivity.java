@@ -59,6 +59,7 @@ public class ControlActivity extends AppCompatActivity {
     private BluetoothGattCharacteristic rx;
     public static String bluefruitMacAddr = "F0:E5:B2:9B:91:A5";
     private Boolean autoConnectBoolean = false;
+    private boolean isConnected = false;
 
     //Communication Protocol
     private byte lightModeByte = 00; //default solid
@@ -117,6 +118,7 @@ public class ControlActivity extends AppCompatActivity {
 
                             //update UI
                             enableToggleButtons(false);
+                            isConnected = false;
                         }
                     });
                 }
@@ -133,6 +135,9 @@ public class ControlActivity extends AppCompatActivity {
                     public void run() {
                         //stuff that updates ui
                         enableToggleButtons(true);
+                        isConnected = true;
+                        unlockButton.setText(R.string.lock);
+                        unlockButton.setBackgroundColor(getResources().getColor(R.color.black));
                     }
                 });
 
@@ -259,75 +264,81 @@ public class ControlActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                //get unlock dialog box view
-                LayoutInflater li = LayoutInflater.from(context);
-                View unlockView = li.inflate(R.layout.unlock_dialog, null);
+                if (isConnected == false) {
 
-                //build unlock dialog box
-                AlertDialog.Builder unlockDialogBuilder = new AlertDialog.Builder(context);
+                    //get unlock dialog box view
+                    LayoutInflater li = LayoutInflater.from(context);
+                    View unlockView = li.inflate(R.layout.unlock_dialog, null);
 
-                //set unlock_dialog.xml to unlockDialogBuilder
-                unlockDialogBuilder.setView(unlockView);
+                    //build unlock dialog box
+                    AlertDialog.Builder unlockDialogBuilder = new AlertDialog.Builder(context);
 
-                //store input MAC address from dialog box
-                final EditText macAdd = (EditText) unlockView.findViewById(R.id.editTextMACAddress);
+                    //set unlock_dialog.xml to unlockDialogBuilder
+                    unlockDialogBuilder.setView(unlockView);
 
-                //prefill edittext with bluefruit mac address
-                macAdd.setText(bluefruitMacAddr);
+                    //store input MAC address from dialog box
+                    final EditText macAdd = (EditText) unlockView.findViewById(R.id.editTextMACAddress);
 
-                //callbacks for dialog box buttons
-                unlockDialogBuilder.setPositiveButton(R.string.accept, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
+                    //prefill edittext with bluefruit mac address
+                    macAdd.setText(bluefruitMacAddr);
 
-                        String macAddStr = macAdd.getText().toString();
+                    //callbacks for dialog box buttons
+                    unlockDialogBuilder.setPositiveButton(R.string.accept, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
 
-                        if (!macAddStr.matches("")) {
-                            //overwrite mac address with user input
-                            bluefruitMacAddr = macAdd.getText().toString();
+                            String macAddStr = macAdd.getText().toString();
 
-                            // Initializes Bluetooth adapter.
-                            final BluetoothManager bluetoothManager =
-                                    (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-                            mBluetoothAdapter = bluetoothManager.getAdapter();
+                            if (!macAddStr.matches("")) {
+                                //overwrite mac address with user input
+                                bluefruitMacAddr = macAdd.getText().toString();
 
-                            if (mBluetoothAdapter == null) {
-                                // Device does not support Bluetooth
-                                Toast.makeText(context, "Device does not support Bluetooth", Toast.LENGTH_SHORT).show();
+                                // Initializes Bluetooth adapter.
+                                final BluetoothManager bluetoothManager =
+                                        (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+                                mBluetoothAdapter = bluetoothManager.getAdapter();
+
+                                if (mBluetoothAdapter == null) {
+                                    // Device does not support Bluetooth
+                                    Toast.makeText(context, "Device does not support Bluetooth", Toast.LENGTH_SHORT).show();
+                                }
+
+                                //make sure bluetooth is on
+                                if (!mBluetoothAdapter.isEnabled()) {
+                                    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                                    startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+                                }
+
+                                //check if phone has le enabled
+                                if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+                                    Toast.makeText(context, "No LE Support.", Toast.LENGTH_SHORT).show();
+                                    finish();
+                                    return;
+                                }
+
+                                //scan for devices
+                                mBluetoothAdapter.startLeScan(mLeScanCallback);
+                                dialog.cancel();
                             }
+                        }
+                    });
 
-                            //make sure bluetooth is on
-                            if (!mBluetoothAdapter.isEnabled()) {
-                                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-                            }
-
-                            //check if phone has le enabled
-                            if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-                                Toast.makeText(context, "No LE Support.", Toast.LENGTH_SHORT).show();
-                                finish();
-                                return;
-                            }
-
-                            //scan for devices
-                            mBluetoothAdapter.startLeScan(mLeScanCallback);
+                    unlockDialogBuilder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
                             dialog.cancel();
                         }
-                    }
-                });
+                    });
 
-                unlockDialogBuilder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                });
-
-                // create dialog box
-                AlertDialog unlockDialog = unlockDialogBuilder.create();
-                // Show dialog
-                unlockDialog.show();
+                    // create dialog box
+                    AlertDialog unlockDialog = unlockDialogBuilder.create();
+                    // Show dialog
+                    unlockDialog.show();
+                } else {
+                    disconnect();
+                }
             }
+
         });
 
         //send information from toggle buttons to arduino via BLE
@@ -455,18 +466,28 @@ public class ControlActivity extends AppCompatActivity {
         super.onDestroy();
 
         //disconnect BLE with app is destoryed
-        disconnect();
+        disconnectDestroy();
     }
 
-    public void disconnect() {
+    public void disconnectDestroy() {
         if (mBluetoothGatt != null) {
             mBluetoothGatt.disconnect();
         }
         mBluetoothGatt = null;
         tx = null;
         rx = null;
+        isConnected = false;
+    }
+
+    public void disconnect() {
+        if (mBluetoothGatt != null) {
+            mBluetoothGatt.disconnect();
+        }
+        //update boolean
+        isConnected = false;
+
+        //update button
+        unlockButton.setText(R.string.unlock);
+        unlockButton.setBackgroundColor(getResources().getColor(R.color.darkgray));
     }
 }
-
-
-

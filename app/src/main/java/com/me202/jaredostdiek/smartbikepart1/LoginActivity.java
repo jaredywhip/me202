@@ -16,7 +16,6 @@ import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 
-
 /**
  * Created by jaredostdiek on 4/4/16.
  *File Description: Java file to control the Login Screen.

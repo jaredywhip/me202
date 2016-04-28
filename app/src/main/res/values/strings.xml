@@ -32,6 +32,7 @@
     <string name="notConnected">not connected</string>
     <string name="history">history</string>
     <string name="unlock">unlock</string>
+    <string name="lock">lock</string>
 
     <!-- AlertDialog Strings-->
     <string name="accept">accept</string>

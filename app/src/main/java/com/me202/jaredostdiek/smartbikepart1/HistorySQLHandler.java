@@ -134,8 +134,6 @@ public class HistorySQLHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(LIST_HISTORY, KEY_ID + " = ?",
                 new String[]{String.valueOf(history.getID())});
-        //String.valueOf(
-        //db.delete(LIST_HISTORY, KEY_FIRE_ID + " = ?",null);
         db.close();
     }
 
