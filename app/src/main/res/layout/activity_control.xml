@@ -5,7 +5,8 @@
     android:layout_height="match_parent"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.me202.jaredostdiek.smartbikepart1.ControlActivity"
-    android:background="@color/whitesmoke">
+    android:background="@color/whitesmoke"
+    android:id = "@+id/controlLayout">
 
     <TextView
         android:id="@+id/bikeID"
@@ -21,7 +22,6 @@
         android:id="@+id/connectionState"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/notConnected"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
@@ -46,7 +46,7 @@
         />
 
     <Button
-        android:id="@+id/history_button"
+        android:id="@+id/historyButton"
         android:layout_width="250dp"
         android:textSize="25sp"
         android:layout_height="50dp"
@@ -54,7 +54,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
-        android:background="@color/pumice"
+        android:background="@color/green"
         android:textColor="@color/whitesmoke"
         />
 
